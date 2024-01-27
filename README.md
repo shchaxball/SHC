@@ -5,7 +5,7 @@ Haxball Headless Host
 ```javascript
 // Pegar codigo de la api.
 
-Room.create({<propiedades>})
+Room.Create({<propiedades>})
 .then(() => {
     console.log("Sala creada.");
 })
@@ -18,7 +18,7 @@ Room.create({<propiedades>})
 ```javascript
 // El codigo de la api
 
-Room.create({roomName: "Tu sala de haxball", public: true})
+Room.Create({roomName: "Tu sala de haxball", public: true})
 .then(() => {
     Room.onUserJoin = function(user) {
    if (user.name === "tu nombre") {
