@@ -5,7 +5,7 @@ Haxball Headless Host
 ```javascript
 // Pegar codigo de la api.
 
-Room.Create({<propiedades>})
+Room.Create({<config>})
 .then(() => {
     console.log("Sala creada.");
 })
@@ -18,19 +18,21 @@ Room.Create({<propiedades>})
 ```javascript
 // El codigo de la api
 
-Room.Create({roomName: "Tu sala de haxball", public: true})
+Room.Create({name: "Tu sala de haxball", private: true, commandPrefix: "!"})
 .then(() => {
     Room.onUserJoin = function(user) {
    if (user.name === "tu nombre") {
         Room.setUserAdmin(user.id); // Te dara admin.
       }
     }
-    
+
+    Room.onTimeIsUp = function(time) {
+        Room.stopGame();
+    }
+
     Room.onGoalScored = function (scorer) {
         Room.sendAnnounce("Gol de: " + scorer.name);
     }
-
-    Room.commandPrefix = "!";
 
     Room.onCommand = function (user, command) {
         if (command == "!tuComando") {
@@ -603,6 +605,200 @@ Obtiene la posición actual del balón.
 Ejemplo:
 ```javascript
 let ballPosition = Room.getBallPosition();
+```
+
+### **addSegments(segmentProperties);**
+Añade un segmento al estadio actual. Los segmentos definen las líneas del campo y las barreras.
+
+Ejemplo:
+```javascript
+Room.addSegments({
+    "v0": 1,
+    "v1": 2,
+    "curve": 0,
+    "vis": true,
+    "color": "C7E6BD"
+});
+```
+
+### **addDisc(discProperties);**
+Añade un disco al estadio actual. Los discos pueden ser utilizados como balones adicionales, jugadores o cualquier objeto móvil.
+
+Ejemplo:
+```javascript
+Room.addDisc({
+    "pos": [0, 0],
+    "radius": 10,
+    "color": "FF0000"
+});
+```
+
+### **addGoals(goalProperties);**
+Añade una portería al estadio actual. Define los lugares donde se pueden anotar goles.
+
+Ejemplo:
+```javascript
+Room.addGoals({
+    "p0": [-370, 64],
+    "p1": [-370, -64],
+    "team": "red"
+});
+```
+
+### **addVertexes(vertexProperties);**
+Añade un vértice al estadio actual. Los vértices son puntos que definen las esquinas de los segmentos y las porterías.
+
+Ejemplo:
+```javascript
+Room.addVertexes({
+    "x": 0,
+    "y": 100,
+    "bCoef": 1,
+    "cMask": ["ball"],
+    "color": "FFFFFF"
+});
+```
+
+### **addPlanes(planeProperties);**
+Añade un plano al estadio actual. Los planos se utilizan para definir las áreas fuera de los límites del campo de juego.
+
+Ejemplo:
+```javascript
+Room.addPlanes({
+    "normal": [0, 1],
+    "dist": -200,
+    "bCoef": 1,
+    "cMask": ["all"]
+});
+```
+
+### **addRedSpawn(spawnPoint);**
+Añade un punto de aparición para el equipo rojo en el estadio actual.
+
+Ejemplo:
+```javascript
+Room.addRedSpawn([100, 50]);
+```
+
+### **setBG(backgroundProperties);**
+Establece las propiedades del fondo del estadio.
+
+Ejemplo:
+```javascript
+Room.setBG({
+    "type": "grass",
+    "width": 370,
+    "height": 170,
+    "kickOffRadius": 75,
+    "cornerRadius": 0
+});
+```
+
+### **addBlueSpawn(spawnPoint);**
+Añade un punto de aparición para el equipo azul en el estadio actual.
+
+Ejemplo:
+```javascript
+Room.addBlueSpawn([-100, -50]);
+```
+
+### **getMapName();**
+Obtiene el nombre del estadio actual.
+
+Ejemplo:
+```javascript
+let mapName = Room.getMapName();
+console.log("Nombre del estadio: " + mapName);
+```
+
+### **isAdminPresent();**
+Comprueba si hay algún administrador en la sala.
+
+Ejemplo:
+```javascript
+if (Room.isAdminPresent()) {
+    console.log("Hay un administrador en la sala.");
+} else {
+    console.log("No hay administradores en la sala.");
+}
+```
+
+### **isRecording();**
+Comprueba si la sala está actualmente grabando.
+
+Ejemplo:
+```javascript
+if (Room.isRecording()) {
+    console.log("La sala está grabando.");
+} else {
+    console.log("La sala no está grabando.");
+}
+```
+
+### **isPaused();**
+Comprueba si el juego está actualmente en pausa.
+
+Ejemplo:
+```javascript
+if (Room.isPaused()) {
+    console.log("El juego está pausado.");
+} else {
+    console.log("El juego no está pausado.");
+}
+```
+
+### **getConfig();**
+Obtiene la configuración actual de la sala.
+
+Ejemplo:
+```javascript
+let config = Room.getConfig();
+console.log("Configuración de la sala: ", config);
+```
+
+### **isHost();**
+Comprueba si se inicio la sala.
+
+### **recToFile(file);**
+Guarda la grabación actual en un archivo.
+
+Ejemplo:
+```javascript
+let fileData = Room.recToFile(Room.stopRec());
+```
+
+### **onAfter<funcion>**
+Es la misma funcion, pero se ejecutara 5 segundos despues.
+
+Ejemplo:
+```javascript
+Room.onAfterPause = function(byUser) {
+    console.log("Pasaron 5 segundos.");
+}
+```
+
+### **Config**
+
+```javascript
+botName - Nombre del bot.
+
+private - Es la variable public, si lo pones en true se mostrara la sala.
+
+roomPassword - Es la contraseña de el host.
+
+name - El nombre de la sala.
+
+maxUsers - La cantidad maxima de usuarios permitidos. // Minimo 2 y maximo 30.
+
+token - Para abrir tu sala con un token.
+
+isBotShow - Definir si el bot se muestra en la sala.
+
+location - Localizacion del host.
+
+commandPrefix - el Prefijo de onCommand.
+
+hideMessage - Esconder los mensajes de el chat. (Sirve para decorar los mensajes de el chat)
 ```
 
 ----------------------
