@@ -1,32 +1,97 @@
 var Room = {
     commandPrefix: "?",
+    _jXNz: "",
     hideMessage: false,
     roomHeadless: null,
+    _bjZn: [],
+    zxn: ![],
+    _jBB: null,
     h: null,
+    _xNzjsd: false,
+    _zhnxb: false,
+    _NXB: false,
     Create: function(_cf) {
+        var config = _cf;
+        let lastCF = {};
+        if (config) {
+            if (config.botName) {
+                lastCF.playerName = config.botName;
+            }
+            if (config.name) {
+                lastCF.roomName = config.name;
+            }
+            if (config.roomPassword) {
+                lastCF.password = config.roomPassword
+            }
+            if (config.maxUsers) {
+                lastCF.maxPlayers = config.maxUsers;
+            }
+            if (config.private) {
+                lastCF.public = config.private;
+            }
+            if (config.token) {
+                lastCF.token = config.token;
+            }
+            if (config.isBotShow) {
+                lastCF.noPlayer = config.isBotShow;
+            }
+            if (config.location) {
+                lastCF.geo = config.location;
+            }
+            if (config.commandPrefix) {
+                Room.commandPrefix = config.commandPrefix;
+            }
+            if (config.hideMessage) {
+                Room.hideMessage = config.hideMessage;
+            }
+        }
+        _jBB = _cf;
         return new Promise((_rs, _rj) => {            
-            const _rm = HBInit(_cf);
+            const _rm = HBInit(lastCF);
             Room.roomHeadless = _rm;
             _rs(_rm);
             _rm.onRoomLink = function(_lkURL) {
+                Room._zhnxb = true;
                 console.log(_lkURL);
                 Room.onLink(_lkURL);
                 setTimeout(() => { Room.afterRoomLink(_lkURL) }, 1000);
             };
             _rm.onPlayerJoin = function(_pl) {
                 Room.onUserJoin(_pl);
+                setTimeout(() => {
+                    Room.onAfterUserJoin(_pl);
+                }, 5000);
             };
             _rm.onPlayerLeave = function(_pl) {
                 Room.onUserLeave(_pl);
+                setTimeout(() => {
+                    Room.onAfterUserLeave(_pl);
+                }, 5000);
             };
             _rm.onGameStart = function(_pl) {
                 Room.onStart(_pl);
+                Room.zxn = ![];
+                setTimeout(() => {
+                    Room.onAfterStart(_pl);
+                }, 5000);
             };
             _rm.onGameStop = function(_pl) {
                 Room.onStop(_pl);
+                Room.zxn = ![];
+                setTimeout(() => {
+                    Room.onAfterStop(_pl);
+                }, 5000);
             };
             _rm.onGameTick = function() {
                 Room.everyTick();
+                if (_rm.getScores().time == (_rm.getScores().timeLimit * 60 - 5) && _rm.getScores().timeLimit != 0 && Room.zxn == ![]) {
+                    Room.zxn = !![];
+                    Room.onAfterTimeIsUp(_rm.getScores().time);
+                }
+                if (_rm.getScores().time == (_rm.getScores().timeLimit * 60) && _rm.getScores().timeLimit != 0 && Room.zxn == ![]) {
+                    Room.zxn = !![];
+                    Room.onTimeIsUp(_rm.getScores().time);
+                }
             };
             _rm.onPlayerChat = function(_pl, _msg) {                    
                 if (_msg.startsWith(Room.commandPrefix)) {
@@ -35,46 +100,92 @@ var Room = {
                 } else {
                     if (Room.hideMessage) {
                     Room.onUserChat(_pl, _msg);
+                    setTimeout(() => {
+                        Room.onAfterUserChat(_pl, _msg);
+                    }, 5000);
                     return false;
                     }
                     else {
                         Room.onUserChat(_pl, _msg);
+                        setTimeout(() => {
+                            Room.onAfterUserChat(_pl, _msg);
+                        }, 5000);
                     }
                 }
             };
             _rm.onTeamVictory = function(_sc) {
                 Room.onGameVictory(_sc);
+                Room.zxn = ![];
+                setTimeout(() => {
+                    Room.onAfterGameVictory(_sc);
+                }, 5000);
             };
             _rm.onPlayerBallKick = function(_pl) {
                 Room.onBallKick(_pl);
                 Room.h = _pl;
+                setTimeout(() => {
+                    Room.onAfterBallKick(_pl);
+                }, 5000);
             };
             _rm.onPlayerTeamChange = function(_cp, _bp) {
                 Room.onUserTeamChange(_cp, _bp);               
+                setTimeout(() => {
+                    Room.onAfterUserTeamChange(_cp, _bp);
+                }, 5000);
             };
             _rm.onPlayerAdminChange = function(_cp, _bp) {
                 Room.onUserAdmin(_cp, _bp);
+                setTimeout(() => {
+                    Room.onAfterUserAdmin(_cp, _bp);
+                }, 5000);
             };
             _rm.onTeamGoal = function(_tm) {
                 Room.onGoalScored(Room.h);
+                setTimeout(() => {
+                    Room.onAfterGoalScored(Room.h);
+                }, 5000);
             };
-            _rm.onPlayerKicked = function(_kp, _bp) {
-                Room.onUserKicked(_kp, _bp);
+            _rm.onPlayerKicked = function(_kp, _re, _ba, _bp) {
+                Room.onUserKicked(_kp, _re, _ba, _bp);
+                if (_bp === !![]) {
+                    Room._bjZn.push(_kp.id);
+                }
+                setTimeout(() => {
+                    Room.onAfterUserKicked(_kp, _re, _ba, _bp);
+                }, 5000);
             };
             _rm.onGamePause = function(_bp) {
                 Room.onPause(_bp);
+                setTimeout(() =>  {
+                    Room.onAfterPause(_bp);
+                }, 5000);
+                Room._NXB = true;
             };
             _rm.onGameUnpause = function(_bp) {
                 Room.onUnpause(_bp);
+                setTimeout(() =>  {
+                    Room.onAfterUnPause(_bp);
+                }, 5000);
+                Room._NXB = false;
             };
             _rm.onPositionsReset = function() {
                 Room.onPositions();
+                setTimeout(() => {
+                    Room.onAfterPositions();
+                }, 5000);
             };
             _rm.onStadiumChange = function(_sn, _bp) {
                 Room.onAllStadiumChange(_sn, _bp);
+                Room._jXNz = _sn;
+                setTimeout(() => {
+                    Room.onAfterAllStadiumChange(_sn, _bp);
+                }, 5000);
             };
             _rm.onTeamsLockChange = function(_lk, _bp) {
                 Room.onAllStadiumChange(_lk, _bp);
+                setTimeout(() => {
+                    Room.onAfterTeamLock(_lk, _bp);
+                }, 5000);
             };
         });
     },    _nzxBN: null,
@@ -91,16 +202,34 @@ var Room = {
     },
     afterRoomLink: function(_jGX) {
     },
+    onAfterTimeIsUp: function(_JKzx) {
+
+    },
+    onTimeIsUp: function(_XHbz) {
+
+    },
     onUserJoin: function(_QgZXB) {
+
+    },
+    onAfterUserJoin: function(_QgZXB) {
 
     },
     onStart: function(_PQOW) {
 
     },
+    onAfterStart: function(_PQOW) {
+
+    },
     onStop: function(_XBNZ) {
 
     },
+    onAfterStop: function(_XBNZ) {
+
+    },
     onUserLeave: function(_JXNZ) {
+        
+    },
+    onAfterUserLeave: function(_JXNZ) {
         
     },
     everyTick: function() {
@@ -108,47 +237,94 @@ var Room = {
     },
     onUserChat: function(_jLZZ, _JGSBW) {
     },
+    onAfterUserChat: function(_jLZZ, _JGSBW) {
+    },
     onUserCommand: function(_QXZ, _XQC) {
+
+    },
+    onAfterUserCommand: function(_QXZ, _XQC) {
 
     },
     onCustomStadium: function(_JZ){
 
     },
+    onAfterCustomStadium: function(_JZ){
+
+    },
     onDefaultStadium: function(){
+
+    },
+    onAfterDefaultStadium: function(){
 
     },
     onUserAdmin: function(_jZ, _BY){
 
     },
+    onAfterUserAdmin: function(_jZ, _BY){
+
+    },
     onGameVictory: function(_gZ){
+
+    },
+    onAfterGameVictory: function(_gZ){
 
     },
     onGoalScored: function(_ZX) {
 
     },    
+    onAfterGoalScored: function(_ZX) {
+
+    },    
     onBallKick: function(_oBl) {
+
+    },
+    onAfterBallKick: function(_oBl) {
 
     },
     onUserTeamChange: function(_cHn, _njZ) {
 
     },
-    onUserKicked: function(_jSnQ, _XZW) {
+    onAfterUserTeamChange: function(_cHn, _njZ) {
 
     },
+    onUserKicked: function(_jSnQ,_HBXBX, _HBINI, _XZW) {
+        
+    },
+    onAfterUserKicked: function(_jSnQ, _XZW) {
+        
+    },
     onPause: function(_hjX) {
+
+    },
+    onAfterPause: function(_hjX) {
 
     },
     onUnpause: function(_jhZ) {
 
     },
+    onAfterUnpause: function(_jhZ) {
+
+    },
     onPositions: function() {
+
+    },
+    onAfterPositions: function() {
 
     },
     onAllStadiumChange: function(_jHX, _BY) {
 
     },
+    onAfterAllStadiumChange: function(_jHX, _BY) {
+
+    },
     onTeamLock: function(_IS, _BZ) {
 
+    },
+    onAfterTeamLock: function(_IS, _BZ) {
+
+    },
+    banList: function() {
+        return Room._bjZn;
     },
     sendAnnounce: function(_a, _b, _c, _d, _e) {
         var _f = "";
@@ -173,10 +349,35 @@ var Room = {
         }
         Room[String.fromCharCode.apply(null, [114, 111, 111, 109, 72, 101, 97, 100, 108, 101, 115, 115])].sendAnnouncement(_f, _g, _h, _i, _j);
         Room.onSendAnnouncement(_f, _g, _h, _i, _j);
+        setTimeout(() => {
+            Room.onAfterSendAnnouncement(_f, _g, _h, _i, _j);
+        }, 5000);
     },
         onSendAnnouncement: function(_f, _h, _e, _q, _s) {
-
-    },
+        },
+        onAfterSendAnnouncement: function(_f, _h, _e, _q, _s) {
+        },
+        fakeUserJoin: function(_kXn) {
+            if (!_kXn) {
+                console.error(String.fromCharCode.apply(null, [68, 101, 98, 101, 115, 32, 101, 115, 112, 101, 99, 105, 102, 105, 99, 97, 114, 32, 101, 108, 32, 117, 115, 117, 97, 114, 105, 111, 46]));    
+                return;
+            }
+            Room.sendAnnounce(_kXn + " has joined", null, 0x8ED2AB);
+        },
+        fakeUserLeave: function(_kXn) {
+            if (!_kXn) {
+                console.error(String.fromCharCode.apply(null, [68, 101, 98, 101, 115, 32, 101, 115, 112, 101, 99, 105, 102, 105, 99, 97, 114, 32, 101, 108, 32, 117, 115, 117, 97, 114, 105, 111, 46]));    
+                return;
+            }
+            Room.sendAnnounce(_kXn + " has left", null, 0x8ED2AB);
+        },
+        fakeUserChat: function(_kXn, _jXBm) {
+            if (!_kXn) {
+                console.error(String.fromCharCode.apply(null, [68, 101, 98, 101, 115, 32, 101, 115, 112, 101, 99, 105, 102, 105, 99, 97, 114, 32, 101, 108, 32, 117, 115, 117, 97, 114, 105, 111, 46]));    
+                return;
+            }
+            Room.sendAnnounce(_kXn + ": " + _jXBm, null, 0xFFFFFF);
+        },
     setUserAdmin: function(_f, _l) {
         if (!_f) {
             console.error(String.fromCharCode.apply(null, [68, 101, 98, 101, 115, 32, 101, 115, 112, 101, 99, 105, 102, 105, 99, 97, 114, 32, 101, 108, 32, 117, 115, 117, 97, 114, 105, 111, 46]));
@@ -224,6 +425,17 @@ var Room = {
     onClearBans: function(){
 
     },
+    isRecording: function() {
+        return Room._xNzjsd;
+    },
+    isPaused: function() {
+        if (Room.roomHeadless.getScores() != null) {
+            return Room._NXB;
+        }
+        else {
+            return null;
+        }
+    },
     setGoalsLimit: function(_xz) {
         if(!_xz){
             console.error(String.fromCharCode.apply(null, [68, 101, 98, 101, 115, 32, 101, 115, 112, 101, 99, 105, 102, 105, 99, 97, 114, 32, 108, 97, 32, 99, 97, 110, 116, 105, 100, 97, 100, 32, 100, 101, 32, 103, 111, 108, 101, 115, 46]));
@@ -246,6 +458,9 @@ var Room = {
             return;
         }
         Room[String.fromCharCode.apply(null, [114, 111, 111, 109, 72, 101, 97, 100, 108, 101, 115, 115])].setTeamsLock(_kz);
+    },
+    getConfig: function() {
+        return Room._jBB;
     },
     colorsRed: null,
     colorsBlue: null,
@@ -310,11 +525,25 @@ var Room = {
             return fhzA;
         }
     },
+    getBall: function() {
+        if(Room[String.fromCharCode.apply(null, [114, 111, 111, 109, 72, 101, 97, 100, 108, 101, 115, 115])].getScores() != null){
+            return Room[String.fromCharCode.apply(null, [114, 111, 111, 109, 72, 101, 97, 100, 108, 101, 115, 115])].getDiscProperties(0);
+        }
+        else {
+            var fhzA = 0 ? Room[String.fromCharCode.apply(null, [142])] : null;
+            return fhzA;
+        }
+    },
     startRec: function() {
         Room[String.fromCharCode.apply(null, [114, 111, 111, 109, 72, 101, 97, 100, 108, 101, 115, 115])][startRecording]();
+        Room._xNzjsd = true;
+    },
+    isHost: function() {
+       return Room._zhnxb;  
     },
     stopRec: function() {
-            return Room[String.fromCharCode.apply(null, [114, 111, 111, 109, 72, 101, 97, 100, 108, 101, 115, 115])].stopRecording();
+        Room._xNzjsd = false;
+        return Room[String.fromCharCode.apply(null, [114, 111, 111, 109, 72, 101, 97, 100, 108, 101, 115, 115])].stopRecording();
     },
     setRoomPassword: function(_px) {
         if(!_px) {
@@ -342,6 +571,90 @@ var Room = {
         }
         Room[String.fromCharCode.apply(null, [114, 111, 111, 109, 72, 101, 97, 100, 108, 101, 115, 115])].setPlayerAvatar(_hZL, _jxz);
     },
+    addSegments: function(_xMz) {
+        let JMap = JSON.parse(Room.exportStadium());
+        JMap.segments.push(_xMz);
+        room.stopGame();
+        setTimeout(() => {
+            room.setCustomStadium(JMap);
+        }, 100);
+        setTimeout(() => {
+            room.startGame();
+        }, 200);
+    },
+    addDisc: function(_xMz) {
+        let JMap = JSON.parse(Room.exportStadium());
+        JMap.discs.push(_xMz);
+        room.stopGame();
+        setTimeout(() => {
+            Room.setCustomStadium(JMap);
+        }, 100);
+        setTimeout(() => {
+            Room.startGame();
+        }, 200);
+    },
+    addGoals: function(_xMz) {
+        let JMap = JSON.parse(Room.exportStadium());
+        JMap.goals.push(_xMz);
+        room.stopGame();
+        setTimeout(() => {
+            room.setCustomStadium(JMap);
+        }, 100);
+        setTimeout(() => {
+            room.startGame();
+        }, 200);
+    },
+    addVertexes: function(_xMz) {
+        let JMap = JSON.parse(Room.exportStadium());
+        JMap.vertexes.push(_xMz);
+        room.stopGame();
+        setTimeout(() => {
+            room.setCustomStadium(JMap);
+        }, 100);
+        setTimeout(() => {
+            room.startGame();
+        }, 200);
+    },
+    addPlanes: function(_xMz) {
+        let JMap = JSON.parse(Room.exportStadium());
+        JMap.planes.push(_xMz);
+        room.stopGame();
+        setTimeout(() => {
+            room.setCustomStadium(JMap);
+        }, 100);
+        setTimeout(() => {
+            room.startGame();
+        }, 200);
+    },
+    addRedSpawn: function(_xMz) {
+        let JMap = JSON.parse(Room.exportStadium());
+        JMap.redSpawnPoints.push(_xMz);
+        room.stopGame();
+        setTimeout(() => {
+            room.setCustomStadium(JMap);
+        }, 100);
+        setTimeout(() => {
+            room.startGame();
+        }, 200);
+    },
+    setBG: function(_xMz) {
+        let JMap = JSON.parse(Room.exportStadium());
+        JMap.bg = _XMz;
+    },
+    addBlueSpawn: function(_xMz) {
+        let JMap = JSON.parse(Room.exportStadium());
+        JMap.blueSpawnPoints.push(_xMz);
+        room.stopGame();
+        setTimeout(() => {
+            room.setCustomStadium(JMap);
+        }, 100);
+        setTimeout(() => {
+            room.startGame();
+        }, 200);
+    },
+    getMapName: function() {
+        return _jXNz;
+    },
     editDisc: function(_hXmz, _jsL) {
         if (!_hXmz && _hXmz != 0 || !_jsL) {
             console.error(String.fromCharCode.apply(null, [68,101,98,101,115,32,101,115,112,101,99,105,102,105,99,97,114,32,101,108,32,100,105,115,99,111,32,111,32,108,97,115,32,112,114,111,112,105,101,100,97,100,101,115,46]));
@@ -349,6 +662,9 @@ var Room = {
         }
         Room[String.fromCharCode.apply(null, [114, 111, 111, 109, 72, 101, 97, 100, 108, 101, 115, 115])].setDiscProperties(_hXmz, _jsL);
         Room.onEditDisc(_hXmz, _jsL);
+        setTimeout(() => {
+            Room.onAfterEditDisc(_hXmz, _jsL);
+        }, 5000);
     },
     getDisc: function(_jXNH) {
         if (!_jXNH && _jXNH != 0) {
@@ -364,6 +680,18 @@ var Room = {
         }
         Room[String.fromCharCode.apply(null, [114, 111, 111, 109, 72, 101, 97, 100, 108, 101, 115, 115])].setPlayerDiscProperties(_jxL, _jxH);
         Room.onEditPlayerDisc(_jxL, _jxH);
+        setTimeout(() => {
+            Room.onAfterEditPlayerDisc(_jxL, _jxH);
+        }, 5000);
+    },
+    isAdminPresent: function() {
+        var _hZZBB = room.getPlayerList();
+	    if (_hZZBB.find((_hZZBB) => _hZZBB.admin) != null) {
+	    	return true;
+	    }
+	    else {
+	    	return false;
+	    }
     },
     getPlayerDisc: function(_ixz) {
         if (!_ixz) {
@@ -380,11 +708,33 @@ var Room = {
     onEditDisc: function(_kzxc, _hvnc) {
         
     },
+    onAfterEditDisc: function(_kzxc, _hvnc) {
+        
+    },
     onEditPlayerDisc: function(_kxL, _uwBH) {
+
+    },
+    onAfterEditPlayerDisc: function(_kxL, _uwBH) {
 
     },
     exportStadium: function() {
         return Room[_nzxBN];
+    },
+    recToFile: function(_zN) {
+        if (_zN) {
+            const _nXBE = new FormData();
+            const _hB = new Date();
+            _nXBE.append(
+              'file',
+              new File([Room.stopRec()], _hB.getSeconds() +""+ _hB.getDay +""+ _hB.getMilliseconds + "" + _hB.getFullYear +'-HBReplay.hbr2', {
+                type: 'text/plain',
+              })
+            )
+            return _nXBE;
+        }
+        else {
+            return null;
+        }
     },
     exportColors: function(_jzLK) {
         if(!_jzLK) {
