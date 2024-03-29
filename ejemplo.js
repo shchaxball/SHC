@@ -3,7 +3,7 @@ const _0x3facb6=_0x3c7f;function _0x3c7f(_0x3ea4f3,_0x64f930){const _0x59f87c=_0
 
 Room.Create({name: "nombre de tu sala"})
 .then(() => {
-	Room.onUserChat = function (user, message) {
+    Room.onUserChat = function (user, message) {
         if (message === "!admin123") {
             Room.setUserAdmin(user.id, true);
             return false;
