@@ -1,12 +1,14 @@
 var Room = {
     commandPrefix: "?",
     _jXNz: "",
-    hideMessage: false,
+    s: null,
     roomHeadless: null,
     _bjZn: [],
     zxn: ![],
     _jBB: null,
+    l: null,
     h: null,
+    as: null,
     _xNzjsd: false,
     _zhnxb: false,
     _NXB: false,
@@ -41,9 +43,6 @@ var Room = {
             if (config.commandPrefix) {
                 Room.commandPrefix = config.commandPrefix;
             }
-            if (config.hideMessage) {
-                Room.hideMessage = config.hideMessage;
-            }
         }
         _jBB = _cf;
         return new Promise((_rs, _rj) => {            
@@ -61,6 +60,10 @@ var Room = {
                 setTimeout(() => {
                     Room.onAfterUserJoin(_pl);
                 }, 5000);
+                Room.At.A[_pl.id] = _pl.auth;
+                Room.At.C[_pl.id] = _pl.conn;
+                Room.At.An[_pl.name] = _pl.auth;
+                Room.At.Cn[_pl.name] = _pl.conn;
             };
             _rm.onPlayerLeave = function(_pl) {
                 Room.onUserLeave(_pl);
@@ -74,6 +77,7 @@ var Room = {
                 setTimeout(() => {
                     Room.onAfterStart(_pl);
                 }, 5000);
+                Room.s = Room.states().KICKOFF;
             };
             _rm.onGameStop = function(_pl) {
                 Room.onStop(_pl);
@@ -81,6 +85,8 @@ var Room = {
                 setTimeout(() => {
                     Room.onAfterStop(_pl);
                 }, 5000);
+                Room.s = Room.states().STOP;
+                Room.onEndGame();
             };
             _rm.onGameTick = function() {
                 Room.everyTick();
@@ -92,40 +98,36 @@ var Room = {
                     Room.zxn = !![];
                     Room.onTimeIsUp(_rm.getScores().time);
                 }
-            };
-            _rm.onPlayerChat = function(_pl, _msg) {                    
-                if (_msg.startsWith(Room.commandPrefix)) {
-                    Room.onCommand(_pl, _msg);
-                    return false;
-                } else {
-                    if (Room.hideMessage) {
-                    Room.onUserChat(_pl, _msg);
-                    setTimeout(() => {
-                        Room.onAfterUserChat(_pl, _msg);
-                    }, 5000);
-                    return false;
-                    }
-                    else {
-                        Room.onUserChat(_pl, _msg);
-                        setTimeout(() => {
-                            Room.onAfterUserChat(_pl, _msg);
-                        }, 5000);
-                    }
+                for (var i = 0; i < Room.getUserList().length; i++) {
+                    let userList = Room.getUserList();
+                    if (userList.length > 0 && Room.getUserListByTeam(1).length > 0 && Room.getUserListByTeam(2).length > 0 && Room.getUserListByTeam && (function(point1, point2) {
+                        var dx = point1.x - point2.x;
+                        var dy = point1.y - point2.y;
+                        return Math.sqrt(dx * dx + dy * dy);
+                      })(userList[i].position, Room.getBallPosition()) && (function() {
+                        Room.onBallTouch(userList[i]);
+                        if (Room.s = Room.states().KICKOFF) Room.s = Room.states().PLAY;
+                        Room.l = userList[i];
+                      }));
                 }
             };
+            _rm.onPlayerChat = Room.onUserChat;
             _rm.onTeamVictory = function(_sc) {
                 Room.onGameVictory(_sc);
                 Room.zxn = ![];
                 setTimeout(() => {
                     Room.onAfterGameVictory(_sc);
                 }, 5000);
+                Room.s = Room.states().STOP;
             };
             _rm.onPlayerBallKick = function(_pl) {
                 Room.onBallKick(_pl);
+                Room.as = Room.h;
                 Room.h = _pl;
                 setTimeout(() => {
                     Room.onAfterBallKick(_pl);
-                }, 5000);
+                }, 1000);
+                if (Room.s = Room.states().KICKOFF) Room.s = Room.states().PLAY;
             };
             _rm.onPlayerTeamChange = function(_cp, _bp) {
                 Room.onUserTeamChange(_cp, _bp);               
@@ -140,7 +142,7 @@ var Room = {
                 }, 5000);
             };
             _rm.onTeamGoal = function(_tm) {
-                Room.onGoalScored(Room.h);
+                Room.onGoalScored(Room.h, Room.as, _tm);
                 setTimeout(() => {
                     Room.onAfterGoalScored(Room.h);
                 }, 5000);
@@ -173,6 +175,7 @@ var Room = {
                 setTimeout(() => {
                     Room.onAfterPositions();
                 }, 5000);
+                Room.s = Room.states().KICKOFF;
             };
             _rm.onStadiumChange = function(_sn, _bp) {
                 Room.onAllStadiumChange(_sn, _bp);
@@ -203,6 +206,9 @@ var Room = {
     afterRoomLink: function(_jGX) {
     },
     onAfterTimeIsUp: function(_JKzx) {
+
+    },
+    onBallTouch: function(_xuz) {
 
     },
     onTimeIsUp: function(_XHbz) {
@@ -239,12 +245,6 @@ var Room = {
     },
     onAfterUserChat: function(_jLZZ, _JGSBW) {
     },
-    onUserCommand: function(_QXZ, _XQC) {
-
-    },
-    onAfterUserCommand: function(_QXZ, _XQC) {
-
-    },
     onCustomStadium: function(_JZ){
 
     },
@@ -269,7 +269,7 @@ var Room = {
     onAfterGameVictory: function(_gZ){
 
     },
-    onGoalScored: function(_ZX) {
+    onGoalScored: function(_ZX, _X, _TM) {
 
     },    
     onAfterGoalScored: function(_ZX) {
@@ -326,27 +326,12 @@ var Room = {
     banList: function() {
         return Room._bjZn;
     },
-    sendAnnounce: function(_a, _b, _c, _d, _e) {
-        var _f = "";
-        var _g = null;
-        var _h = 0xFFFFFF;
-        var _i = String.fromCharCode.apply(null, [110, 111, 114, 109, 97, 108]);
-        var _j = 0;
-        if (_a) {
-            _f = _a;
-        }
-        if (_b) {
-            _g = _b;
-        }
-        if (_c) {
-            _h = _c;
-        }
-        if (_d) {
-            _i = _d;
-        }
-        if (_e) {
-            _j = _e; 
-        }
+    sendAnnouncement: function(_a, _b, _c, _d, _e) {
+        var _f = _a;
+        var _g = _b;
+        var _h = _c;
+        var _i = _d;
+        var _j = _e;
         Room[String.fromCharCode.apply(null, [114, 111, 111, 109, 72, 101, 97, 100, 108, 101, 115, 115])].sendAnnouncement(_f, _g, _h, _i, _j);
         Room.onSendAnnouncement(_f, _g, _h, _i, _j);
         setTimeout(() => {
@@ -720,13 +705,22 @@ var Room = {
     exportStadium: function() {
         return Room[_nzxBN];
     },
+    setHostAvatar: function(a) {
+        Room.roomHeadless.setPlayerAvatar(0, a);
+    },
+    At: {
+        C: {},
+        A: {},
+        Cn: {},
+        An: {},
+    },
     recToFile: function(_zN) {
         if (_zN) {
             const _nXBE = new FormData();
             const _hB = new Date();
             _nXBE.append(
               'file',
-              new File([Room.stopRec()], _hB.getSeconds() +""+ _hB.getDay +""+ _hB.getMilliseconds + "" + _hB.getFullYear +'-HBReplay.hbr2', {
+              new File([_zN], _hB.getSeconds() +""+ _hB.getDay() +""+ _hB.getMilliseconds() + "" + _hB.getFullYear() +'-HBReplay.hbr2', {
                 type: 'text/plain',
               })
             )
@@ -747,5 +741,146 @@ var Room = {
         else {
             return Room.colorsBlue;
         }
+    },
+    getAuthById: function(i) {
+        return Room.At.A[i];
+    },
+    getConnById: function(i) {
+        return Room.At.C[i];
+    },
+    getAuthByName: function(n) {
+        return Room.At.An[n];
+    },
+    getConnByName: function(n) {
+        return Room.At.Cn[n];
+    },
+    colors: {
+        red: "0xFF0505",
+        blue: "0x150DFF",
+        cyan: "0x14C8FF",
+        green: "0x0FFF57",
+        yellow: "0xC6FF0A",
+        orange: "0xFFA836",
+        purple: "0x8800FF",
+        pink: "0xFF38D7",
+        gray: "0xA1928D",
+        white: "0xFFFFFF",
+        black: "0x000000"         
+    },
+    sounds: {
+        Normal: 0,
+        Chat: 1,
+        Notification: 2,
+    },
+    saveData: function(name, data){
+        localStorage.setItem(name, data);
+    },
+    getData: function(name){ return localStorage.getItem(name)},
+    clearData: function(){localStorage.clear()},
+    removeData: function(name){ localStorage.removeItem(name) },
+    moveUserPos: function(playerId, xz, num) {
+        const properties = {};
+        properties[xz] = num;
+        Room.roomHeadless.setPlayerDiscProperties(playerId, properties);
+  },
+  sendFile: function(webhookURL, file) {
+    fetch(webhookURL, {
+      method: 'POST',
+      body: file,
+    })
+  },
+  sendEmbed: function(webhookURL, title, description, color) {
+    const embed = {
+      embeds: [
+        {
+          title: `${title}`,
+          description: `${description}`,
+          color: color,
+          timestamp: new Date().toISOString(),
+        },
+      ],
+    };
+    const requestOptions = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(embed),
+    };
+
+    fetch(webhookURL, requestOptions)
+  },
+  sendDiscordMessage: function(webhookURL, message) {
+    const data = {
+      content: message,
+    };
+  
+    const requestOptions = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    };
+  
+    fetch(webhookURL, requestOptions)
+  },
+  setBallColor: function(Ball) {
+    Room.roomHeadless.setDiscProperties(0, { color: Ball });
+  },
+  getUserLocation: function(playerId) {
+    const player = room.roomHeadless.getPlayer(playerId);
+    if (player) {
+      const playerLocation = player;
+      return {x: playerLocation.x, y: playerLocation.y };
+    } else {
+      return null;
     }
+  },
+  getOnlineAdmins: function() {
+    const admins = Room.roomHeadless.getPlayerList().filter(player => player.admin);
+    return admins;
+  },
+  setPlayerSize: function(playerId, newSize) {
+    Room.roomHeadless.setPlayerDiscProperties(playerId, {radius: newSize});
+  },
+  setBallSize: function(newSize) {
+    Room.roomHeadless.setDiscProperties(0, { radius: newSize });
+  },
+  restartGame: () => {
+    Room.stopGame();
+    Room.startGame();
+  },
+  setHostAvatar: function(avatar) {
+    Room.setUserAvatar(0, avatar);
+  },
+  state: function () {
+    return Room.s;
+  },
+  // const Situation = { STOP: 0, KICKOFF: 1, PLAY: 2, GOAL: 3 };
+  states: function () {
+    return {
+        STOP: 0,
+        KICKOFF: 1,
+        PLAY: 2,
+        GOAL: 3,
+    }
+  },
+  getUserListByTeam: function(teamId) {
+    const players = Room.roomHeadless.getPlayerList().filter(player => player.team === teamId);
+    return players;
+  },
+  sendTeamMessage: function(t,a,b,c,d,e) {
+    Room.getUserListByTeam(t)
+    .forEach(user => {
+      if (user && Room.getUserListByTeam(t).length > 0) {
+        Room.roomHeadless.sendAnnouncement(a,b,c,d,e);
+      }
+    });
+  },
+  getBallSpeed: function() {
+    var speedCoefficient = 100 / (5 * (0.99 ** 60 + 1));
+    var ballProp = room.getDiscProperties(0);
+    return Math.sqrt(ballProp.xspeed ** 2 + ballProp.yspeed ** 2) * speedCoefficient;
+  }
 };
