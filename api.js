@@ -98,17 +98,25 @@ var Room = {
                     Room.zxn = !![];
                     Room.onTimeIsUp(_rm.getScores().time);
                 }
-                for (var i = 0; i < Room.getUserList().length; i++) {
-                    let userList = Room.getUserList();
-                    if (userList.length > 0 && Room.getUserListByTeam(1).length > 0 && Room.getUserListByTeam(2).length > 0 && Room.getUserListByTeam && (function(point1, point2) {
-                        var dx = point1.x - point2.x;
-                        var dy = point1.y - point2.y;
-                        return Math.sqrt(dx * dx + dy * dy);
-                      })(userList[i].position, Room.getBallPosition()) && (function() {
-                        Room.onBallTouch(userList[i]);
-                        if (Room.s = Room.states().KICKOFF) Room.s = Room.states().PLAY;
-                        Room.l = userList[i];
-                      }));
+                let userList = Room.getUserList();
+                if (userList.length > 0 && (Room.getUserListByTeam(1).length > 0 || Room.getUserListByTeam(2).length > 0)) {
+                    for (var i = 0; i < userList.length; i++) {
+                        let userPosition = userList[i].position;
+                        let ballPosition = Room.getBallPosition();
+                        
+                        if (userPosition && ballPosition) { // Asegurarse de que ambas posiciones estén definidas
+                            var distance = Math.sqrt(Math.pow(userPosition.x - ballPosition.x, 2) + Math.pow(userPosition.y - ballPosition.y, 2));
+                            
+                            // Suponiendo que deseas hacer algo si la distancia cumple cierto criterio, por ejemplo:
+                            if (distance < 30) {
+                                Room.onBallTouch(userList[i]);
+                                if (Room.s === Room.states().KICKOFF) {
+                                    Room.s = Room.states().PLAY;
+                                }
+                                Room.l = userList[i];
+                            }
+                        }
+                    }
                 }
             };
             _rm.onPlayerChat = Room.onUserChat;
@@ -882,5 +890,14 @@ var Room = {
     var speedCoefficient = 100 / (5 * (0.99 ** 60 + 1));
     var ballProp = room.getDiscProperties(0);
     return Math.sqrt(ballProp.xspeed ** 2 + ballProp.yspeed ** 2) * speedCoefficient;
-  }
+  },
+  Teams: {
+    SPECTATOR: 0,
+    RED: 1,
+    BLUE: 2,
+  },
+  UserState: {
+    USER: false,
+    ADMIN: true,
+  } 
 };
